@@ -9,7 +9,7 @@ pub struct MinecraftLauncher;
 
 impl MinecraftLauncher {
     pub fn open_world(
-        world_name: &str,
+        world_name: Option<String>,
         account_name: &str,
         version_fallback: String,
     ) -> Result<(), AppError> {
@@ -19,14 +19,22 @@ impl MinecraftLauncher {
         let easy_maps_folder = PathBuf::from(local_app_data).join("EasyMaps");
         let easy_maps_minecraft_folder = easy_maps_folder.join("Minecraft");
         let worlds_folder = easy_maps_minecraft_folder.join("saves");
-        let world_version =
-            WorldVersion::from_world(&worlds_folder.join(world_name), version_fallback)?;
 
-        MinecraftLaunch::on_version(world_version.version())
+        let mut binding = MinecraftLaunch::new(&version_fallback);
+        let minecraft_launch = binding
             .game_directory(easy_maps_minecraft_folder)
-            .on_world(world_name)
-            .account_name(account_name)
-            .start()?;
+            .account_name(account_name);
+
+        if let Some(world_name) = world_name {
+            let world_version =
+                WorldVersion::from_world(&worlds_folder.join(&world_name), version_fallback)?;
+
+            minecraft_launch
+                .version(world_version.version().to_string())
+                .world_name(&world_name);
+        }
+
+        minecraft_launch.start()?;
 
         Ok(())
     }

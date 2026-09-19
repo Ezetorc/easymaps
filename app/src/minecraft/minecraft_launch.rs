@@ -14,7 +14,7 @@ pub struct MinecraftLaunch {
 }
 
 impl MinecraftLaunch {
-    pub fn on_version(version: &String) -> Self {
+    pub fn new(version: &String) -> Self {
         Self {
             version: version.to_owned(),
             account_name: String::from("Steve"),
@@ -23,12 +23,17 @@ impl MinecraftLaunch {
         }
     }
 
+    pub fn version(&mut self, version: String) -> &mut Self {
+        self.version = version;
+        self
+    }
+
     pub fn game_directory(&mut self, game_directory: PathBuf) -> &mut Self {
         self.game_directory = Some(game_directory);
         self
     }
 
-    pub fn on_world(&mut self, world_name: &str) -> &mut Self {
+    pub fn world_name(&mut self, world_name: &String) -> &mut Self {
         self.world_name = Some(world_name.to_string());
         self
     }
