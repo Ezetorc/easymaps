@@ -11,7 +11,6 @@ use stuffr::{
 use crate::{
     minecraft::minecraft_launcher::MinecraftLauncher,
     native_messaging::{request::Request, response::Response},
-    utilities::log,
 };
 
 mod app_error;
@@ -26,15 +25,15 @@ fn main() {
                 minecraft_version,
                 filename,
             } => {
-                log(&format!("[Request]: {minecraft_version} # {filename}"));
+                log!("[Request]: {minecraft_version} # {filename}");
 
                 if let Err(error) = &Response::Starting.send() {
-                    log(&format!("[Error sending 'Starting' response] {error}"));
+                    log!("[Error sending 'Starting' response] {error}");
                     break;
                 }
 
                 let Some(local_app_data) = env::var_os("LOCALAPPDATA") else {
-                    log("Error obtaining LocalAppData path");
+                    log!("Error obtaining LocalAppData path");
                     break;
                 };
 
@@ -55,8 +54,8 @@ fn main() {
                 );
 
                 match extract_result {
-                    Ok(output) => log(&format!("Success: {:?}", output)),
-                    Err(error) => log(&format!("Error: {}", error)),
+                    Ok(output) => log!("Success: {:?}", output),
+                    Err(error) => log!("Error: {}", error),
                 }
 
                 let read_result = fs::read_dir(&worlds_folder);
@@ -67,7 +66,7 @@ fn main() {
                         for entry in output {
                             match entry {
                                 Ok(entry) => {
-                                    log(&format!("[Entry] Success: {entry:?}"));
+                                    log!("[Entry] Success: {entry:?}");
                                     let path = entry.path();
 
                                     if path.is_dir() {
@@ -82,19 +81,17 @@ fn main() {
                                                 world_directory_name =
                                                     Some(directory_name.display().to_string());
 
-                                                log(&format!(
-                                                    "[Directory Name] {world_directory_name:?}"
-                                                ));
+                                                log!("[Directory Name] {world_directory_name:?}");
                                                 break;
                                             }
                                         }
                                     }
                                 }
-                                Err(error) => log(&format!("[Entry] Error: {error:?}")),
+                                Err(error) => log!("[Entry] Error: {error:?}"),
                             }
                         }
                     }
-                    Err(error) => log(&format!("[Read] Error: {error:?}")),
+                    Err(error) => log!("[Read] Error: {error:?}"),
                 }
 
                 let launch_result = MinecraftLauncher::open_world(
@@ -104,12 +101,12 @@ fn main() {
                 );
 
                 match launch_result {
-                    Ok(_) => log("[EasyMaps] Success"),
-                    Err(error) => log(&format!("[EasyMaps] Error: {error:?}")),
+                    Ok(_) => log!("[EasyMaps] Success"),
+                    Err(error) => log!("[EasyMaps] Error: {error:?}"),
                 }
 
                 if let Err(error) = &Response::Finished.send() {
-                    log(&format!("[Error sending 'Finished' response] {error}"));
+                    log!("[Error sending 'Finished' response] {error}");
                     break;
                 }
             }

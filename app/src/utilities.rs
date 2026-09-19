@@ -1,23 +1,26 @@
-use std::env;
-use std::fs::OpenOptions;
 use std::io::Write;
-use std::path::PathBuf;
 
-pub fn log(message: &str) {
-    let Some(local_app_data) = env::var_os("LOCALAPPDATA") else {
-        log("Error obtaining LocalAppData path");
+pub fn write_log(args: std::fmt::Arguments) {
+    let Some(local_app_data) = std::env::var_os("LOCALAPPDATA") else {
         panic!("LocalAppData not found");
     };
 
-    let path = PathBuf::from(local_app_data)
+    let path = std::path::PathBuf::from(local_app_data)
         .join("EasyMaps")
         .join("EasyMaps.log");
 
-    let mut file = OpenOptions::new()
+    let mut file = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
         .open(path)
-        .expect("Couldn't write log");
+        .expect("Couldn't create log file");
 
-    writeln!(file, "{message}").expect("Couldn't write log");
+    writeln!(file, "{args}").expect("Couldn't write log");
+}
+
+#[macro_export]
+macro_rules! log {
+    ($($arg:tt)*) => {
+        $crate::utilities::write_log(format_args!($($arg)*))
+    };
 }
