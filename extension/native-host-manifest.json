@@ -1,0 +1,7 @@
+{
+  "name": "com.easymaps.host",
+  "description": "EasyMaps Native Host",
+  "path": "C:/Users/Zeki/Documents/Software/easymaps/app/target/debug/easymaps.exe",
+  "type": "stdio",
+  "allowed_extensions": ["easymaps@example.com"]
+}

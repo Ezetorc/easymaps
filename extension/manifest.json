@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "EasyMaps",
+  "version": "1.0.0",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "easymaps@example.com"
+    }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.minecraftmaps.com/*"],
+      "js": ["models/PlayButton.js", "adapters/MinecraftMaps.js"]
+    }
+  ],
+
+  "permissions": ["nativeMessaging", "downloads"],
+
+  "background": {
+    "scripts": ["Background.js"],
+    "type": "module"
+  }
+}

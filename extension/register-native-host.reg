@@ -1,0 +1,4 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Mozilla\NativeMessagingHosts\com.easymaps.host]
+@="C:\\Users\\Zeki\\Documents\\Software\\easymaps\\extension\\native-host-manifest.json"
