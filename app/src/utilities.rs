@@ -1,13 +1,9 @@
 use std::io::Write;
 
-pub fn write_log(args: std::fmt::Arguments) {
-    let Some(local_app_data) = std::env::var_os("LOCALAPPDATA") else {
-        panic!("LocalAppData not found");
-    };
+use crate::app_paths::AppPaths;
 
-    let path = std::path::PathBuf::from(local_app_data)
-        .join("EasyMaps")
-        .join("EasyMaps.log");
+pub fn write_log(args: std::fmt::Arguments) {
+    let path = AppPaths::root().unwrap().join("EasyMaps.log");
 
     let mut file = std::fs::OpenOptions::new()
         .create(true)
