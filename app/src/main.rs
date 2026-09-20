@@ -52,6 +52,28 @@ fn handle_request(request: Request) -> Result<(), AppError> {
 fn handle_start_request(minecraft_version: String, filename: String) -> Result<(), AppError> {
     Response::Starting.send()?;
 
+    extract_world(&filename)?;
+
+    let world_name = determine_world_name()?;
+    let version = world_name
+        .as_deref()
+        .and_then(determine_world_version)
+        .unwrap_or(minecraft_version);
+
+    let launch_result = MinecraftLauncher::launch(&version, world_name.as_deref(), None);
+
+    match launch_result {
+        Ok(_) => Response::Finished.send()?,
+        Err(error) => Response::Error {
+            error: error.to_string(),
+        }
+        .send()?,
+    }
+
+    Ok(())
+}
+
+fn extract_world(filename: &String) -> Result<(), AppError> {
     stuffr::entries::extract(
         Input::Path(filename.into()),
         Path::new(&AppPaths::worlds()?),
@@ -68,22 +90,6 @@ fn handle_start_request(minecraft_version: String, filename: String) -> Result<(
             "Error while extracting world: {error}"
         )))
     })?;
-
-    let world_name = determine_world_name()?;
-    let version = world_name
-        .as_deref()
-        .and_then(determine_world_version)
-        .unwrap_or(minecraft_version);
-
-    let launch_result = MinecraftLauncher::launch(&version, world_name, None);
-
-    match launch_result {
-        Ok(_) => Response::Finished.send()?,
-        Err(error) => Response::Error {
-            error: error.to_string(),
-        }
-        .send()?,
-    }
 
     Ok(())
 }

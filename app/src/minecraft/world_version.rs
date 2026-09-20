@@ -10,6 +10,7 @@ pub struct WorldVersion;
 impl WorldVersion {
     pub fn from_world(path: &Path) -> Result<String, AppError> {
         let nbt = Self::decode_nbt_file(path)?;
+
         let (_, compound) = parse_nbt(&nbt).map_err(|error| {
             AppError::Minecraft(AppMinecraftError::Nbt(format!("NBT parse error {error}")))
         })?;
