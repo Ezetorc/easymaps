@@ -54,11 +54,11 @@ fn handle_start_request(minecraft_version: String, filename: String) -> Result<(
 
     extract_world(&filename)?;
 
-    let world_name = determine_world_name()?;
-    let version = world_name
-        .as_deref()
-        .and_then(determine_world_version)
-        .unwrap_or(minecraft_version);
+    let world_name: Option<String> = determine_world_name()?;
+    let version = match world_name.as_deref() {
+        Some(name) => WorldVersion::from_world(name)?,
+        None => minecraft_version,
+    };
 
     let launch_result = MinecraftLauncher::launch(&version, world_name.as_deref(), None);
 
@@ -92,21 +92,6 @@ fn extract_world(filename: &String) -> Result<(), AppError> {
     })?;
 
     Ok(())
-}
-
-fn determine_world_version(world_name: &str) -> Option<String> {
-    let mut version = None;
-    let world_path = AppPaths::world(world_name).ok();
-
-    if let Some(world_path) = world_path {
-        let world_version = WorldVersion::from_world(&world_path).ok();
-
-        if let Some(world_version) = world_version {
-            version = Some(world_version)
-        }
-    }
-
-    version
 }
 
 fn determine_world_name() -> Result<Option<String>, AppError> {

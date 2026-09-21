@@ -26,4 +26,8 @@ impl AppPaths {
     pub fn world(name: &str) -> Result<PathBuf, AppError> {
         Ok(Self::worlds()?.join(name))
     }
+
+    pub fn world_level_dat(name: &str) -> Result<PathBuf, AppError> {
+        Ok(Self::world(name)?.join("level.dat"))
+    }
 }
