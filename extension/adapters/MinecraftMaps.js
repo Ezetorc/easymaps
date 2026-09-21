@@ -13,7 +13,14 @@ class MinecraftMapsAdapter extends AbstractWebAdapter {
         const isJavaEdition = !document.querySelector('a[href="/bedrock"]');
 
         if (!isJavaEdition) {
-            this.playButton.setUnsupported("EasyMaps doesn't support Bedrock yet... :(");
+            this.playButton.setUnsupported("EasyMaps doesn't support Bedrock yet...");
+            return false;
+        }
+
+        const isModded = document.querySelector('a[href="/modded"]');
+
+        if (isModded) {
+            this.playButton.setUnsupported("EasyMaps doesn't support modded maps yet...");
             return false;
         }
 
@@ -27,7 +34,7 @@ class MinecraftMapsAdapter extends AbstractWebAdapter {
             ).singleNodeValue
 
         if (isExternal) {
-            this.playButton.setUnsupported("EasyMaps doesn't work with external downloads yet... :(")
+            this.playButton.setUnsupported("EasyMaps doesn't work with external downloads yet...")
             return false
         }
 
@@ -66,7 +73,7 @@ class MinecraftMapsAdapter extends AbstractWebAdapter {
             console.log("[Browser > Adapter] Received: ", message);
 
             if (message.status === "Starting") {
-                this.playButton.setLoading();
+                this.playButton.setStarting();
             } else if (message.status === "Finished") {
                 this.playButton.setFinished();
             } else if (message.status === "Error" && "error" in message) {
