@@ -1,12 +1,13 @@
-use std::{fmt::Display, io};
+use std::fmt::Display;
 
 use crate::errors::{
-    app_messaging_error::AppMessagingError, app_minecraft_error::AppMinecraftError,
+    app_io_error::AppIoError, app_messaging_error::AppMessagingError,
+    app_minecraft_error::AppMinecraftError,
 };
 
 #[derive(Debug)]
 pub enum AppError {
-    Io(io::Error),
+    Io(AppIoError),
     Minecraft(AppMinecraftError),
     Messaging(AppMessagingError),
     Generic(String),
@@ -20,11 +21,5 @@ impl Display for AppError {
             AppError::Minecraft(error) => write!(f, "[Minecraft error] {error}"),
             AppError::Generic(message) => write!(f, "[Error] {message}"),
         }
-    }
-}
-
-impl From<io::Error> for AppError {
-    fn from(value: io::Error) -> Self {
-        Self::Io(value)
     }
 }

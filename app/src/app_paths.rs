@@ -1,4 +1,7 @@
-use std::{env, path::PathBuf};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
 use crate::errors::app_error::AppError;
 
@@ -15,6 +18,10 @@ impl AppPaths {
         Ok(PathBuf::from(local_app_data).join("EasyMaps"))
     }
 
+    pub fn temp() -> Result<PathBuf, AppError> {
+        Ok(Self::root()?.join("Temp"))
+    }
+
     pub fn minecraft() -> Result<PathBuf, AppError> {
         Ok(Self::root()?.join("Minecraft"))
     }
@@ -23,11 +30,11 @@ impl AppPaths {
         Ok(Self::minecraft()?.join("saves"))
     }
 
-    pub fn world(name: &str) -> Result<PathBuf, AppError> {
+    pub fn world<P: AsRef<Path>>(name: P) -> Result<PathBuf, AppError> {
         Ok(Self::worlds()?.join(name))
     }
 
-    pub fn world_level_dat(name: &str) -> Result<PathBuf, AppError> {
+    pub fn world_level_dat<P: AsRef<Path>>(name: P) -> Result<PathBuf, AppError> {
         Ok(Self::world(name)?.join("level.dat"))
     }
 }

@@ -1,14 +1,16 @@
 use serde::Deserialize;
 use std::io::{self, ErrorKind, Read};
 
-use crate::errors::{app_error::AppError, app_messaging_error::AppMessagingError};
+use crate::errors::{
+    app_error::AppError, app_io_error::AppIoError, app_messaging_error::AppMessagingError,
+};
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]
 pub enum Request {
     Start {
         minecraft_version: String,
-        filename: String,
+        download_path: String,
     },
 }
 
@@ -37,10 +39,10 @@ impl Request {
                         return Ok(None);
                     }
 
-                    return Err(AppError::Io(io::Error::new(
+                    return Err(AppError::Io(AppIoError::Generic(io::Error::new(
                         ErrorKind::UnexpectedEof,
                         "Incomplete request length",
-                    )));
+                    ))));
                 }
 
                 Ok(n) => {
@@ -48,7 +50,7 @@ impl Request {
                 }
 
                 Err(error) => {
-                    return Err(AppError::Io(error));
+                    return Err(AppError::Io(AppIoError::Generic(error)));
                 }
             }
         }
@@ -67,7 +69,7 @@ impl Request {
 
         io::stdin()
             .read_exact(&mut request_buffer)
-            .map_err(AppError::Io)?;
+            .map_err(|error| AppError::Io(AppIoError::Generic(error)))?;
 
         Ok(request_buffer)
     }

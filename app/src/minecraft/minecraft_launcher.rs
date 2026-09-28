@@ -19,7 +19,7 @@ pub struct MinecraftLauncher;
 impl MinecraftLauncher {
     pub fn launch(
         version: &str,
-        world_name: Option<&str>,
+        world_name: &str,
         account_name: Option<&str>,
     ) -> Result<(), AppError> {
         let minecraft_directory = get_minecraft_directory();
@@ -66,17 +66,14 @@ impl MinecraftLauncher {
 
     fn execute_launch_command(
         launch_command: &LaunchCommand,
-        world_name: Option<&str>,
+        world_name: &str,
     ) -> Result<(), AppError> {
         let mut command = Command::new(&launch_command.executable);
 
         command
             .args(&launch_command.args)
+            .args(["--quickPlaySingleplayer", world_name])
             .current_dir(&launch_command.working_dir);
-
-        if let Some(world_name) = world_name {
-            command.args(["--quickPlaySingleplayer", world_name]);
-        }
 
         command
             .stdout(std::process::Stdio::piped())

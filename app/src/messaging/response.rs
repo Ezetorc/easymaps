@@ -8,7 +8,7 @@ use crate::errors::app_error::AppError;
 pub enum Response {
     Starting,
     Finished,
-    Error { error: String },
+    Error,
 }
 
 impl Response {

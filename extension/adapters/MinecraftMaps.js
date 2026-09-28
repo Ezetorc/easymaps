@@ -76,8 +76,8 @@ class MinecraftMapsAdapter extends AbstractWebAdapter {
                 this.playButton.setStarting();
             } else if (message.status === "Finished") {
                 this.playButton.setFinished();
-            } else if (message.status === "Error" && "error" in message) {
-                this.playButton.setError(message.error);
+            } else if (message.status === "Error") {
+                this.playButton.setError();
             }
         });
     }

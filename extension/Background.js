@@ -61,8 +61,9 @@ browser.downloads.onChanged.addListener((changedDownload) => {
       port.postMessage({
         action: "Start",
         minecraft_version: minecraftVersion,
-        filename: download.filename,
+        download_path: download.filename,
       });
     }
   }
 });
+

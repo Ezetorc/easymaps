@@ -90,9 +90,10 @@ class EasyMapsPlayButton {
     }, 8000)
   }
 
-  setError(message) {
-    this.element.textContent = `An error ocurred: '${message}'`;
+  setError() {
+    this.element.textContent = `An error ocurred! Try again`;
     this.element.disabled = true;
+    this.element.style.backgroundColor = "#ed4337"
     this.element.style.cursor = "not-allowed";
   }
 }

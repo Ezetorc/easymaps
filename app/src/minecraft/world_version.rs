@@ -7,37 +7,33 @@ use std::{io::Read, path::Path};
 
 use crate::{
     app_paths::AppPaths,
-    errors::{app_error::AppError, app_minecraft_error::AppMinecraftError},
+    errors::{
+        app_error::AppError, app_io_error::AppIoError, app_minecraft_error::AppMinecraftError,
+    },
 };
 
 #[derive(Debug)]
 pub struct WorldVersion;
 
 impl WorldVersion {
-    pub fn from_world(world_name: &str) -> Result<String, AppError> {
+    pub fn from_world<P: AsRef<Path>>(world_name: P) -> Result<Option<String>, AppError> {
         let level_dat_path = AppPaths::world_level_dat(world_name)?;
-        let world_version = Self::from_level_dat(&level_dat_path)?;
-
-        Ok(world_version)
-    }
-
-    fn from_level_dat(path: &Path) -> Result<String, AppError> {
-        let nbt = Self::read_compressed_nbt(path)?;
+        let nbt = Self::read_compressed_nbt(level_dat_path)?;
         let (_, compound) = Self::parse_nbt(&nbt)?;
-        let name = Self::extract_version_name(&compound)?;
+        let name = Self::extract_version_name(&compound);
 
-        match name {
-            NbtTag::String(name) => Ok(name.to_string()),
-            _ => Err(AppError::Minecraft(AppMinecraftError::Nbt(
-                "Couldn't parse version data".to_string(),
-            ))),
+        if let Some(name) = name {
+            match name {
+                NbtTag::String(name) => return Ok(Some(name.to_string())),
+                _ => return Ok(None),
+            };
         }
+
+        Ok(None)
     }
 
-    fn extract_version_name(compound: &NbtCompound) -> Result<&NbtTag, AppError> {
-        get_field!(compound, "Data"."Version"."Name").ok_or(AppError::Minecraft(
-            AppMinecraftError::Nbt("Missing version name".to_string()),
-        ))
+    fn extract_version_name(compound: &NbtCompound) -> Option<&NbtTag> {
+        get_field!(compound, "Data"."Version"."Name")
     }
 
     fn parse_nbt(nbt: &[u8]) -> Result<(NbtString, NbtCompound), AppError> {
@@ -48,8 +44,10 @@ impl WorldVersion {
         })
     }
 
-    fn read_compressed_nbt(path: &Path) -> Result<Vec<u8>, AppError> {
-        let file = std::fs::File::open(path).map_err(AppError::Io)?;
+    fn read_compressed_nbt<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, AppError> {
+        let file =
+            std::fs::File::open(path).map_err(|error| AppError::Io(AppIoError::Generic(error)))?;
+
         let mut gzip_decoder = GzDecoder::new(file);
         let mut nbt = Vec::new();
 
