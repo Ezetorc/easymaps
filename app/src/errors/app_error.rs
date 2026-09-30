@@ -10,7 +10,6 @@ pub enum AppError {
     Io(AppIoError),
     Minecraft(AppMinecraftError),
     Messaging(AppMessagingError),
-    Generic(String),
 }
 
 impl Display for AppError {
@@ -19,7 +18,6 @@ impl Display for AppError {
             AppError::Io(error) => write!(f, "[I/O error] {error}"),
             AppError::Messaging(error) => write!(f, "[Messaging error] {error}"),
             AppError::Minecraft(error) => write!(f, "[Minecraft error] {error}"),
-            AppError::Generic(message) => write!(f, "[Error] {message}"),
         }
     }
 }

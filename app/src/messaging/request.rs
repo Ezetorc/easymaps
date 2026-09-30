@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::io::{self, ErrorKind, Read};
+use std::io::{self, ErrorKind, Read, stdin};
 
 use crate::errors::{
     app_error::AppError, app_io_error::AppIoError, app_messaging_error::AppMessagingError,
@@ -11,6 +11,7 @@ pub enum Request {
     Start {
         minecraft_version: String,
         download_path: String,
+        web_tab_id: Option<i32>,
     },
 }
 
@@ -33,25 +34,20 @@ impl Request {
         let mut bytes_read = 0;
 
         while bytes_read < length_buffer.len() {
-            match io::stdin().read(&mut length_buffer[bytes_read..]) {
-                Ok(0) => {
-                    if bytes_read == 0 {
-                        return Ok(None);
+            let read_result = stdin().read(&mut length_buffer[bytes_read..])?;
+
+            if read_result == 0 {
+                match bytes_read {
+                    0 => return Ok(None),
+                    _ => {
+                        return Err(AppError::Io(AppIoError::Generic(io::Error::new(
+                            ErrorKind::UnexpectedEof,
+                            "Incomplete request length",
+                        ))));
                     }
-
-                    return Err(AppError::Io(AppIoError::Generic(io::Error::new(
-                        ErrorKind::UnexpectedEof,
-                        "Incomplete request length",
-                    ))));
                 }
-
-                Ok(n) => {
-                    bytes_read += n;
-                }
-
-                Err(error) => {
-                    return Err(AppError::Io(AppIoError::Generic(error)));
-                }
+            } else {
+                bytes_read += read_result;
             }
         }
 
@@ -67,9 +63,7 @@ impl Request {
 
         let mut request_buffer = vec![0u8; length];
 
-        io::stdin()
-            .read_exact(&mut request_buffer)
-            .map_err(|error| AppError::Io(AppIoError::Generic(error)))?;
+        stdin().read_exact(&mut request_buffer)?;
 
         Ok(request_buffer)
     }

@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
 use mc_launcher_core::LauncherError;
+use nbt_rs::error::ParseError;
+
+use crate::errors::app_error::AppError;
 
 #[derive(Debug)]
 pub enum AppMinecraftError {
@@ -16,5 +19,11 @@ impl Display for AppMinecraftError {
             Self::World(message) => write!(f, "World error: {message}"),
             Self::Launcher(error) => write!(f, "Launcher error: {error}"),
         }
+    }
+}
+
+impl From<ParseError> for AppError {
+    fn from(value: ParseError) -> Self {
+        Self::Minecraft(AppMinecraftError::Nbt(value.to_string()))
     }
 }

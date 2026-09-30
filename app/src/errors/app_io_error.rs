@@ -6,8 +6,9 @@ use crate::errors::app_error::AppError;
 pub enum AppIoError {
     Generic(io::Error),
     ExtractionFailed(String),
-    NamingError(String),
+    NameError(String),
     InvalidEntries(String),
+    InvalidPath(String),
 }
 
 impl Display for AppIoError {
@@ -15,8 +16,9 @@ impl Display for AppIoError {
         match self {
             Self::Generic(error) => write!(f, "{error}"),
             Self::ExtractionFailed(message) => write!(f, "Error while extracting file: {message}"),
-            Self::NamingError(message) => write!(f, "Error with file name: {message}"),
+            Self::NameError(message) => write!(f, "Error with file name: {message}"),
             Self::InvalidEntries(message) => write!(f, "Invalid entries: {message}"),
+            Self::InvalidPath(message) => write!(f, "Invalid path: {message}"),
         }
     }
 }

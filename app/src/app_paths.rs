@@ -3,15 +3,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::errors::app_error::AppError;
+use crate::errors::{app_error::AppError, app_io_error::AppIoError};
 
 pub struct AppPaths;
 
 impl AppPaths {
     pub fn root() -> Result<PathBuf, AppError> {
         let Some(local_app_data) = env::var_os("LOCALAPPDATA") else {
-            return Err(AppError::Generic(String::from(
-                "Local App Data directory not found",
+            return Err(AppError::Io(AppIoError::InvalidPath(
+                "Local App Data directory not found".to_string(),
             )));
         };
 
@@ -32,9 +32,5 @@ impl AppPaths {
 
     pub fn world<P: AsRef<Path>>(name: P) -> Result<PathBuf, AppError> {
         Ok(Self::worlds()?.join(name))
-    }
-
-    pub fn world_level_dat<P: AsRef<Path>>(name: P) -> Result<PathBuf, AppError> {
-        Ok(Self::world(name)?.join("level.dat"))
     }
 }
