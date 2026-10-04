@@ -1,7 +1,7 @@
+use crate::utilities::read_compressed_nbt::read_compressed_nbt;
+use anyhow::Result;
 use nbt_rs::{get_field, parse_nbt, types::NbtTag};
 use std::path::PathBuf;
-
-use crate::{errors::app_error::AppError, utilities::read_compressed_nbt::read_compressed_nbt};
 
 pub struct World {
     name: String,
@@ -20,7 +20,7 @@ impl World {
         &self.name
     }
 
-    pub fn find_version(&self) -> Result<Option<String>, AppError> {
+    pub fn find_version(&self) -> Result<Option<String>> {
         let level_dat_path = self.path.join("level.dat");
         let nbt = read_compressed_nbt(level_dat_path)?;
         let (_, compound) = parse_nbt(&nbt)?;

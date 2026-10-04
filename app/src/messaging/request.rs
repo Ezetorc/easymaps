@@ -1,9 +1,7 @@
 use serde::Deserialize;
-use std::io::{self, ErrorKind, Read, stdin};
+use std::io::{Read, stdin};
 
-use crate::errors::{
-    app_error::AppError, app_io_error::AppIoError, app_messaging_error::AppMessagingError,
-};
+use anyhow::{Result, bail};
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]
@@ -11,14 +9,14 @@ pub enum Request {
     Start {
         minecraft_version: String,
         download_path: String,
-        web_tab_id: Option<i32>,
+        requester_id: i32,
     },
 }
 
 impl Request {
     pub const MAX_REQUEST_SIZE: usize = 256;
 
-    pub fn read() -> Result<Option<Self>, AppError> {
+    pub fn read() -> Result<Option<Self>> {
         let Some(length) = Self::read_length()? else {
             return Ok(None);
         };
@@ -29,7 +27,7 @@ impl Request {
         Ok(Some(request))
     }
 
-    fn read_length() -> Result<Option<usize>, AppError> {
+    fn read_length() -> Result<Option<usize>> {
         let mut length_buffer = [0u8; 4];
         let mut bytes_read = 0;
 
@@ -40,10 +38,7 @@ impl Request {
                 match bytes_read {
                     0 => return Ok(None),
                     _ => {
-                        return Err(AppError::Io(AppIoError::Generic(io::Error::new(
-                            ErrorKind::UnexpectedEof,
-                            "Incomplete request length",
-                        ))));
+                        bail!("Incomplete request length")
                     }
                 }
             } else {
@@ -54,11 +49,9 @@ impl Request {
         Ok(Some(u32::from_le_bytes(length_buffer) as usize))
     }
 
-    fn read_message(length: usize) -> Result<Vec<u8>, AppError> {
+    fn read_message(length: usize) -> Result<Vec<u8>> {
         if length > Self::MAX_REQUEST_SIZE {
-            return Err(AppError::Messaging(AppMessagingError::InvalidRequest(
-                "Request is too big".to_string(),
-            )));
+            bail!("Request is too big")
         }
 
         let mut request_buffer = vec![0u8; length];
@@ -68,9 +61,7 @@ impl Request {
         Ok(request_buffer)
     }
 
-    fn parse_message(request_buffer: Vec<u8>) -> Result<Self, AppError> {
-        serde_json::from_slice::<Self>(&request_buffer).map_err(|error| {
-            AppError::Messaging(AppMessagingError::ParseRequestError(error.to_string()))
-        })
+    fn parse_message(request_buffer: Vec<u8>) -> Result<Self> {
+        Ok(serde_json::from_slice::<Self>(&request_buffer)?)
     }
 }

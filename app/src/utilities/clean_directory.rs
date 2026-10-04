@@ -1,11 +1,10 @@
+use anyhow::Result;
 use std::{
     fs::{read_dir, remove_dir_all, remove_file},
     path::Path,
 };
 
-use crate::errors::app_error::AppError;
-
-pub fn clean_directory(path: &Path) -> Result<(), AppError> {
+pub fn clean_directory(path: &Path) -> Result<()> {
     let entries = read_dir(path)?.collect::<Result<Vec<_>, _>>()?;
 
     for entry in entries {

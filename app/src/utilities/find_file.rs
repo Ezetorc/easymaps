@@ -1,11 +1,10 @@
+use anyhow::Result;
 use std::{
     fs::read_dir,
     path::{Path, PathBuf},
 };
 
-use crate::errors::app_error::AppError;
-
-pub fn find_file(root: &Path, file_name: &str) -> Result<Option<PathBuf>, AppError> {
+pub fn find_file(root: &Path, file_name: &str) -> Result<Option<PathBuf>> {
     let entries = read_dir(root)?.collect::<Result<Vec<_>, _>>()?;
 
     for entry in entries {

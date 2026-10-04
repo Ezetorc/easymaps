@@ -1,19 +1,19 @@
+use anyhow::Result;
 use serde::Serialize;
 use std::io::{self, Write, stdout};
-
-use crate::errors::app_error::AppError;
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "status")]
 pub enum Response {
-    Starting { web_tab_id: Option<i32> },
-    Finished { web_tab_id: Option<i32> },
-    AppError { web_tab_id: Option<i32> },
+    Importing { requester_id: i32 },
+    Installing { requester_id: i32 },
+    Launching { requester_id: i32 },
+    AppError { requester_id: i32 },
     ConnectionError,
 }
 
 impl Response {
-    pub fn send(&self) -> Result<(), AppError> {
+    pub fn send(&self) -> Result<()> {
         let response_json = serde_json::to_vec(self).map_err(io::Error::other)?;
         let response_length = response_json.len() as u32;
         let response_length = response_length.to_le_bytes();

@@ -1,17 +1,19 @@
 use std::io::Write;
 
-use crate::app_paths::AppPaths;
+use crate::utilities::app_paths::AppPaths;
 
 pub fn write_log(args: std::fmt::Arguments) {
-    let path = AppPaths::root().unwrap().join("EasyMaps.log");
+    if let Ok(root_path) = AppPaths::root() {
+        let path = root_path.join("EasyMaps.log");
 
-    let mut file = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(path)
-        .expect("Couldn't create log file");
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+            .expect("Couldn't create log file");
 
-    writeln!(file, "{args}").expect("Couldn't write log");
+        writeln!(file, "{args}").expect("Couldn't write log");
+    }
 }
 
 #[macro_export]

@@ -5,14 +5,11 @@ use stuffr::{
     ops::Input,
 };
 
-use crate::errors::{app_error::AppError, app_io_error::AppIoError};
+use anyhow::{Context, Result};
 
-pub fn extract_compressed_file(
-    compressed_file: PathBuf,
-    destination: &Path,
-) -> Result<(), AppError> {
+pub fn extract_compressed_file(compressed_file: PathBuf, destination: &Path) -> Result<()> {
     stuffr::entries::extract(
-        Input::Path(compressed_file),
+        Input::Path(compressed_file.clone()),
         destination,
         &Selection::All,
         &ExtractOpts {
@@ -22,7 +19,7 @@ pub fn extract_compressed_file(
             force: false,
         },
     )
-    .map_err(|error| AppError::Io(AppIoError::ExtractionFailed(error.to_string())))?;
+    .with_context(|| format!("Failed to extract compressed file with path '{compressed_file:?}"))?;
 
     Ok(())
 }

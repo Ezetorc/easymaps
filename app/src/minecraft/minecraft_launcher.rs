@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use anyhow::Result;
 use mc_launcher_core::{
     account::Account,
     command::builder::{LaunchCommand, LaunchOptions},
@@ -9,19 +10,12 @@ use mc_launcher_core::{
     utils::get_minecraft_directory,
 };
 
-use crate::{
-    app_paths::AppPaths,
-    errors::{app_error::AppError, app_minecraft_error::AppMinecraftError},
-};
+use crate::utilities::app_paths::AppPaths;
 
 pub struct MinecraftLauncher;
 
 impl MinecraftLauncher {
-    pub fn launch(
-        version: &str,
-        world_name: &str,
-        account_name: Option<&str>,
-    ) -> Result<(), AppError> {
+    pub fn launch(version: &str, world_name: &str, account_name: Option<&str>) -> Result<()> {
         let minecraft_directory = get_minecraft_directory();
         let launcher = Launcher::new(minecraft_directory);
         let version = Self::load_version(&launcher, version)?;
@@ -32,14 +26,11 @@ impl MinecraftLauncher {
         Ok(())
     }
 
-    fn load_version(launcher: &Launcher, version: &str) -> Result<VersionJson, AppError> {
-        let install_result = launcher
-            .install(InstallRequest::vanilla(version))
-            .map_err(|error| AppError::Minecraft(AppMinecraftError::Launcher(error)))?;
+    fn load_version(launcher: &Launcher, version: &str) -> Result<VersionJson> {
+        let install_result = launcher.install(InstallRequest::vanilla(version))?;
 
-        let version: mc_launcher_core::core::version::VersionJson = launcher
-            .load_version(&install_result.version_id)
-            .map_err(|error| AppError::Minecraft(AppMinecraftError::Launcher(error)))?;
+        let version: mc_launcher_core::core::version::VersionJson =
+            launcher.load_version(&install_result.version_id)?;
 
         Ok(version)
     }
@@ -48,7 +39,7 @@ impl MinecraftLauncher {
         launcher: &Launcher,
         version: VersionJson,
         account_name: Option<&str>,
-    ) -> Result<LaunchCommand, AppError> {
+    ) -> Result<LaunchCommand> {
         let account_name = account_name.unwrap_or("EasyMaps");
 
         let options = LaunchOptions {
@@ -57,17 +48,12 @@ impl MinecraftLauncher {
             ..Default::default()
         };
 
-        let launch_command = launcher
-            .build_launch_command_from_version(&version, options)
-            .map_err(|error| AppError::Minecraft(AppMinecraftError::Launcher(error)))?;
+        let launch_command = launcher.build_launch_command_from_version(&version, options)?;
 
         Ok(launch_command)
     }
 
-    fn execute_launch_command(
-        launch_command: &LaunchCommand,
-        world_name: &str,
-    ) -> Result<(), AppError> {
+    fn execute_launch_command(launch_command: &LaunchCommand, world_name: &str) -> Result<()> {
         let mut command = Command::new(&launch_command.executable);
 
         command
