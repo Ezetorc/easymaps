@@ -1,28 +1,39 @@
+import { parse } from 'valibot'
+import {
+    AppResponseSchema,
+    type AppResponse,
+} from '../schemas/app-response.schema'
+import type { AppRequest } from '../schemas/app-request.schema'
+
 export class NativeHost {
+    private readonly _port: browser.runtime.Port
+    private _onResponse?: (response: AppResponse) => void
+
     constructor(applicationName: string) {
-        const port = browser.runtime.connectNative(applicationName)
+        this._port = browser.runtime.connectNative(applicationName)
 
-        this._port = port
-
-        port.onMessage.addListener((message) => {
-            console.log('[NativeHost] Message received: ', message)
-
-            this._onMessage?.(message)
+        this._port.onDisconnect.addListener(() => {
+            console.warn(`[NativeHost: ${applicationName}] Port disconnected`)
         })
 
-        port.onDisconnect.addListener(() => {
-            console.warn('[NativeHost] Port disconnected')
+        this._port.onMessage.addListener((message) => {
+            console.log('[NativeHost] Response received:', message)
+
+            try {
+                const response = parse(AppResponseSchema, message)
+
+                this._onResponse?.(response)
+            } catch (error) {
+                console.error(`[NativeHost] Error parsing response:`, error)
+            }
         })
     }
 
-    private _onMessage?: (message: unknown) => void = undefined
-    private _port: browser.runtime.Port
-
-    send(message: object) {
-        this._port.postMessage(message)
+    send(request: AppRequest) {
+        this._port.postMessage(request)
     }
 
-    onMessage(callback: (message: unknown) => void) {
-        this._onMessage = callback
+    onResponse(callback: (response: AppResponse) => void) {
+        this._onResponse = callback
     }
 }

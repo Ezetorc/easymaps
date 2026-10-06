@@ -1,9 +1,8 @@
 use crate::{
     minecraft::world::World,
     utilities::{
-        app_paths::AppPaths, clean_directory::clean_directory,
-        extract_compressed_file::extract_compressed_file, find_file::find_file,
-        move_entry_to::move_entry_to,
+        app_paths::AppPaths, extract_compressed_file::extract_compressed_file,
+        path_extension::PathExtension,
     },
 };
 use anyhow::{Context, Result, bail};
@@ -16,27 +15,31 @@ use std::{
 pub struct WorldImporter;
 
 impl WorldImporter {
-    pub fn import(path: PathBuf) -> Result<World> {
+    pub fn import(path: &PathBuf) -> Result<World> {
         let temp_directory_path = AppPaths::temp()?;
 
-        clean_directory(&temp_directory_path)?;
-        Self::move_input_to_temp_directory(path)?;
+        temp_directory_path.clean_directory()?;
 
-        let level_dat_path = find_file(&temp_directory_path, "level.dat")?
+        Self::move_input_to_temp_directory(path.to_path_buf())?;
+
+        let level_dat_path = temp_directory_path
+            .find_file("level.dat")?
             .context("Downloaded folder is not a Minecraft world")?;
-
         let world_directory_path = level_dat_path
             .parent()
             .context("Couldn't get file path's parent")?;
-
         let world_name = world_directory_path
             .file_name()
             .and_then(OsStr::to_str)
             .context("Couldn't get directory's file name")?;
         let world_path = AppPaths::world(world_name)?;
 
-        rename(world_directory_path, &world_path)?;
-        clean_directory(&temp_directory_path)?;
+        rename(world_directory_path, &world_path)
+            .with_context(|| format!("Moving '{world_directory_path:?}' to '{world_path:?}'"))?;
+
+        temp_directory_path
+            .clean_directory()
+            .with_context(|| format!("Cleaning directory '{path:?}'"))?;
 
         Ok(World::new(world_name, world_path))
     }
@@ -69,7 +72,7 @@ impl WorldImporter {
                     let new_directory_path = &directory_path.join("Extracted");
 
                     create_dir(new_directory_path)?;
-                    move_entry_to(entry, new_directory_path)?;
+                    new_directory_path.move_entry_inside(entry)?;
                 }
             }
             2.. => {
@@ -78,7 +81,7 @@ impl WorldImporter {
                 create_dir(new_directory_path)?;
 
                 for entry in directory_entries {
-                    move_entry_to(&entry, new_directory_path)?;
+                    new_directory_path.move_entry_inside(&entry)?;
                 }
             }
         }

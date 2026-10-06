@@ -1,8 +1,8 @@
-import '../models/play-button.model'
-import { safeParse } from 'valibot'
-
+import { ERROR_MESSAGES } from '../constants/error-messages.constants'
 import { WebAdapter } from '../models/web-adapter.model'
-import { ResponseSchema, ResponseStatus } from '../schemas/response.schema'
+import { type AppResponse } from '../schemas/app-response.schema'
+import '../models/play-button.model'
+import { Background } from '../services/background.service'
 
 class MinecraftMapsAdapter extends WebAdapter {
     isValidPage(): boolean {
@@ -73,8 +73,9 @@ class MinecraftMapsAdapter extends WebAdapter {
 
             if ($downloadButton) {
                 $downloadButton.dispatchEvent(clickEvent)
+                this.playButton.setDownloading()
 
-                browser.runtime.sendMessage({
+                Background.send({
                     action: 'Start',
                     minecraftVersion,
                 })
@@ -83,19 +84,19 @@ class MinecraftMapsAdapter extends WebAdapter {
     }
 
     addResponseEvent() {
-        browser.runtime.onMessage.addListener((message: unknown) => {
-            const result = safeParse(ResponseSchema, message)
+        browser.runtime.onMessage.addListener((response: AppResponse) => {
+            if (response.status === 'Importing') {
+                this.playButton.setImporting()
+            } else if (response.status === 'Installing') {
+                this.playButton.setInstalling()
+            } else if (response.status === 'Launching') {
+                this.playButton.setLaunching()
 
-            if (!result.success) return
+                setTimeout(() => this.playButton.setFinished(), 8000)
+            } else if (response.status === 'AppError') {
+                const message = ERROR_MESSAGES[response.error]
 
-            const { output: response } = result
-
-            if (response.status === ResponseStatus.Starting) {
-                this.playButton.setStarting()
-            } else if (response.status === ResponseStatus.Finished) {
-                this.playButton.setFinished()
-            } else if (response.status === ResponseStatus.AppError) {
-                this.playButton.setError()
+                this.playButton.setError(message)
             }
         })
     }

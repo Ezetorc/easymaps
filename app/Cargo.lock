@@ -1997,9 +1997,9 @@ checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
 name = "stuffr"
-version = "0.5.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f888e94d748eb742d5aeecb6db9e529947e0b4a3819040a8e963a17595380cd2"
+checksum = "062e6f392a16f0693ed4ed67bb0eeccc9bc99cc2446b2ddbd5cfe4dc1b8188e0"
 dependencies = [
  "stuffr-core",
  "stuffr-formats",
@@ -2007,9 +2007,9 @@ dependencies = [
 
 [[package]]
 name = "stuffr-core"
-version = "0.5.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c39ca70d38dba9896abeebbf2f6989a82601685e4ac45556c017f8e69eaffbd"
+checksum = "5a4a96b4630a20178702f91fcd0a44dc940a78462faa144ceec97ff9d9becea6"
 dependencies = [
  "tempfile",
  "thiserror",
@@ -2017,9 +2017,9 @@ dependencies = [
 
 [[package]]
 name = "stuffr-formats"
-version = "0.5.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77e9a60bdb4559a7e158da01b2143e937be965b3ff7d2eba4ff4deb205e85e24"
+checksum = "dfaea882bc483187d34b9841ac78d003a3a4ac1f628c6e391fd37f5dbb24a98d"
 dependencies = [
  "ar",
  "brotli",

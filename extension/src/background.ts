@@ -1,52 +1,69 @@
-import { safeParse } from 'valibot'
 import { NativeHost } from './services/native-host.service'
+import { BrowserTab } from './services/browser-tab.service'
 import { DownloadTracker } from './services/download-tracker.service'
-import { BrowserMessenger } from './services/browser-messenger.service'
-import { ResponseSchema, ResponseStatus } from './schemas/response.schema'
-import { RequestAction, RequestSchema } from './schemas/request.schema'
+import type { AdapterRequest } from './schemas/adapter-request.schema'
 
 console.log('[Background] Loaded')
 
 const nativeHost = new NativeHost('easymaps')
-const downloadTracker = new DownloadTracker()
-const browserMessenger = new BrowserMessenger()
+const tabs = new Map<number, BrowserTab>()
 
-nativeHost.onMessage((message) => {
-    const result = safeParse(ResponseSchema, message)
+DownloadTracker.setupEvents()
 
-    if (result.success) {
-        const { output: response } = result
+function getBrowserTab(tabId: number) {
+    let tab = tabs.get(tabId)
 
-        if (response.status == ResponseStatus.ConnectionError) {
-            alert(
-                'Connection error with native host app. Please report this bug'
-            )
-        } else if (response.webTabId != undefined) {
-            browser.tabs.sendMessage(response.webTabId, response)
-        }
+    if (!tab) {
+        tab = new BrowserTab(tabId)
+
+        tab.onRequest((request: AdapterRequest) => {
+            if (request.action === 'Start') {
+                DownloadTracker.start({
+                    tabId: tabId,
+                    minecraftVersion: request.minecraftVersion,
+                })
+            }
+        })
+
+        tabs.set(tabId, tab)
     }
+
+    return tab
+}
+
+browser.runtime.onMessage.addListener((message, sender) => {
+    const tabId = sender.tab?.id
+
+    if (tabId === undefined) return
+
+    const tab = getBrowserTab(tabId)
+
+    tab.receive(message)
 })
 
-downloadTracker.onCompleted((download) => {
+DownloadTracker.onMapDownloadCompleted((download) => {
     nativeHost.send({
         action: 'Start',
         minecraft_version: download.minecraftVersion,
         download_path: download.filename,
-        web_tab_id: download.tabId,
+        requester_id: download.tabId,
     })
 })
 
-browserMessenger.onMessage((data, sender) => {
-    const result = safeParse(RequestSchema, data)
-
-    if (result.success) {
-        const { output: request } = result
-
-        if (request.action == RequestAction.Start) {
-            downloadTracker.start({
-                tabId: sender.tab?.id,
-                minecraftVersion: request.minecraftVersion,
-            })
-        }
+nativeHost.onResponse((response) => {
+    if (response.status === 'ConnectionError') {
+        alert('[EasyMaps WebExtension] Connection error with native host app')
+        return
     }
+
+    const tab = tabs.get(response.requester_id)
+
+    if (!tab) {
+        console.warn(
+            `[Background] Could not find BrowserTab ${response.requester_id}`
+        )
+        return
+    }
+
+    tab.send(response)
 })

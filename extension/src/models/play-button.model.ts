@@ -18,13 +18,6 @@ export class PlayButton {
         this.onPlay = callback
     }
 
-    setUnsupported(message: string): void {
-        this.button.textContent = message
-        this.button.disabled = true
-        this.button.style.backgroundColor = '#ed4337'
-        this.button.style.cursor = 'not-allowed'
-    }
-
     setReady(): void {
         this.button.textContent = 'Play with EasyMaps'
         this.button.disabled = false
@@ -32,31 +25,45 @@ export class PlayButton {
         this.button.style.backgroundColor = '#24aae2'
     }
 
-    setLoading(): void {
-        this.button.textContent = 'Map is being installed. Please wait...'
+    setDownloading() {
+        this.button.textContent = 'Downloading map...'
         this.button.disabled = true
         this.button.style.cursor = 'wait'
     }
 
-    setStarting(): void {
-        this.button.textContent =
-            'Minecraft version is being installed. Please wait...'
+    setImporting() {
+        this.button.textContent = 'Importing Minecraft world...'
+        this.button.disabled = true
+        this.button.style.cursor = 'wait'
+    }
+
+    setInstalling() {
+        this.button.textContent = 'Installing Minecraft version...'
+        this.button.disabled = true
+        this.button.style.cursor = 'wait'
+    }
+
+    setLaunching() {
+        this.button.textContent = 'Launching Minecraft'
         this.button.disabled = true
         this.button.style.cursor = 'wait'
     }
 
     setFinished(): void {
-        this.button.textContent = 'Minecraft will open in a few seconds!'
+        this.button.textContent = 'Enjoy the adventure!'
         this.button.disabled = true
         this.button.style.cursor = 'not-allowed'
-
-        setTimeout(() => {
-            this.button.textContent = 'Enjoy the adventure!'
-        }, 8000)
     }
 
-    setError(): void {
-        this.button.textContent = 'An error occurred! Try again'
+    setUnsupported(message: string): void {
+        this.button.textContent = message
+        this.button.disabled = true
+        this.button.style.backgroundColor = '#ed4337'
+        this.button.style.cursor = 'not-allowed'
+    }
+
+    setError(message?: string): void {
+        this.button.textContent = message ?? 'An error occurred! Try again'
         this.button.disabled = true
         this.button.style.backgroundColor = '#ed4337'
         this.button.style.cursor = 'not-allowed'
@@ -77,7 +84,6 @@ export class PlayButton {
     private setupEvents(): void {
         this.button.addEventListener('click', () => {
             this.onPlay?.()
-            this.setLoading()
         })
 
         this.button.addEventListener('mouseenter', () => {

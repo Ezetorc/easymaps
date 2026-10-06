@@ -1,13 +1,13 @@
 use serde::Deserialize;
 use std::io::{Read, stdin};
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "action")]
 pub enum Request {
     Start {
-        minecraft_version: String,
+        minecraft_version: Option<String>,
         download_path: String,
         requester_id: i32,
     },
@@ -32,7 +32,9 @@ impl Request {
         let mut bytes_read = 0;
 
         while bytes_read < length_buffer.len() {
-            let read_result = stdin().read(&mut length_buffer[bytes_read..])?;
+            let read_result = stdin()
+                .read(&mut length_buffer[bytes_read..])
+                .context("Reading length of buffer")?;
 
             if read_result == 0 {
                 match bytes_read {
@@ -62,6 +64,7 @@ impl Request {
     }
 
     fn parse_message(request_buffer: Vec<u8>) -> Result<Self> {
-        Ok(serde_json::from_slice::<Self>(&request_buffer)?)
+        serde_json::from_slice::<Self>(&request_buffer)
+            .context("Parsing request buffer to JSON format")
     }
 }

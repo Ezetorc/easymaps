@@ -1,51 +1,60 @@
+import type { PendingDownload } from '../models/pending-download'
 import type { Download } from '../schemas/download.schema'
 
-type PendingDownload = Omit<Download, 'filename' | 'id'>
-
 export class DownloadTracker {
-    constructor() {
+    private static _eventsSetup = false
+    private static _onMapDownloadCompleted?: (download: Download) => void
+    private static _pendingDownload?: PendingDownload
+    public static downloads: Set<Download> = new Set()
+
+    public static setupEvents(): void {
+        if (DownloadTracker._eventsSetup) return
+
+        DownloadTracker._eventsSetup = true
+
         browser.downloads.onCreated.addListener((newDownload) => {
             console.log(
                 `[DownloadTracker] Download created: [${newDownload.id}]: ${newDownload.filename}`
             )
 
-            if (this._pendingDownload) {
-                this.downloads.add({
+            if (DownloadTracker._pendingDownload) {
+                DownloadTracker.downloads.add({
                     id: newDownload.id,
                     filename: newDownload.filename,
-                    tabId: this._pendingDownload.tabId,
-                    minecraftVersion: this._pendingDownload.minecraftVersion,
+                    tabId: DownloadTracker._pendingDownload.tabId,
+                    minecraftVersion:
+                        DownloadTracker._pendingDownload.minecraftVersion,
                 })
 
-                this._pendingDownload = undefined
+                DownloadTracker._pendingDownload = undefined
             }
         })
 
         browser.downloads.onChanged.addListener((changedDownload) => {
             if (changedDownload.state == undefined) return
 
-            this.downloads.forEach((download) => {
+            DownloadTracker.downloads.forEach((download) => {
                 if (
                     download.id === changedDownload.id &&
                     changedDownload.state?.current === 'complete'
                 ) {
-                    this.downloads.delete(download)
-                    this._onCompleted?.(download)
+                    DownloadTracker.downloads.delete(download)
+                    DownloadTracker._onMapDownloadCompleted?.(download)
                 }
             })
         })
+
+        console.log('[DownloadTracker] Events successfully setup')
     }
 
-    private _onCompleted?: (download: Download) => void
-    private _pendingDownload?: PendingDownload = undefined
-    downloads: Set<Download> = new Set()
-
-    onCompleted(callback: (download: Download) => void) {
-        this._onCompleted = callback
+    public static onMapDownloadCompleted(
+        callback: (download: Download) => void
+    ): void {
+        DownloadTracker._onMapDownloadCompleted = callback
     }
 
-    start({ tabId, minecraftVersion }: PendingDownload) {
-        this._pendingDownload = {
+    public static start({ tabId, minecraftVersion }: PendingDownload): void {
+        DownloadTracker._pendingDownload = {
             tabId,
             minecraftVersion,
         }
