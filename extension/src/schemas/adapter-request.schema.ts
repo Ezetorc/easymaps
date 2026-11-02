@@ -5,6 +5,15 @@ export const AdapterRequestSchema = v.variant('action', [
         action: v.literal('Start'),
         minecraftVersion: v.optional(v.string()),
     }),
+    v.object({
+        action: v.literal('CheckMap'),
+        worldName: v.string(),
+    }),
+    v.object({
+        action: v.literal('Continue'),
+        worldName: v.string(),
+        minecraftVersion: v.optional(v.string()),
+    }),
 ])
 
 export type AdapterRequest = v.InferOutput<typeof AdapterRequestSchema>

@@ -7,7 +7,6 @@ export class PlayButton {
 
         this.setupStyles()
         this.setupEvents()
-        this.setReady()
     }
 
     get element(): HTMLButtonElement {
@@ -18,8 +17,22 @@ export class PlayButton {
         this.onPlay = callback
     }
 
-    setReady(): void {
+    setChecking(): void {
+        this.button.textContent = 'Checking map information...'
+        this.button.disabled = true
+        this.button.style.cursor = 'not-allowed'
+        this.button.style.backgroundColor = '#ed4337'
+    }
+
+    setStart(): void {
         this.button.textContent = 'Play with EasyMaps'
+        this.button.disabled = false
+        this.button.style.cursor = 'pointer'
+        this.button.style.backgroundColor = '#24aae2'
+    }
+
+    setContinue(): void {
+        this.button.textContent = 'Continue playing'
         this.button.disabled = false
         this.button.style.cursor = 'pointer'
         this.button.style.backgroundColor = '#24aae2'
@@ -29,30 +42,35 @@ export class PlayButton {
         this.button.textContent = 'Downloading map...'
         this.button.disabled = true
         this.button.style.cursor = 'wait'
+        this.button.style.backgroundColor = '#24aae2'
     }
 
     setImporting() {
         this.button.textContent = 'Importing Minecraft world...'
         this.button.disabled = true
         this.button.style.cursor = 'wait'
+        this.button.style.backgroundColor = '#24aae2'
     }
 
     setInstalling() {
         this.button.textContent = 'Installing Minecraft version...'
         this.button.disabled = true
         this.button.style.cursor = 'wait'
+        this.button.style.backgroundColor = '#24aae2'
     }
 
     setLaunching() {
-        this.button.textContent = 'Launching Minecraft'
+        this.button.textContent = 'Launching Minecraft...'
         this.button.disabled = true
         this.button.style.cursor = 'wait'
+        this.button.style.backgroundColor = '#24aae2'
     }
 
     setFinished(): void {
         this.button.textContent = 'Enjoy the adventure!'
         this.button.disabled = true
         this.button.style.cursor = 'not-allowed'
+        this.button.style.backgroundColor = '#24aae2'
     }
 
     setUnsupported(message: string): void {

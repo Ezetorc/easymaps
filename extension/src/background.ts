@@ -22,6 +22,19 @@ function getBrowserTab(tabId: number) {
                     tabId: tabId,
                     minecraftVersion: request.minecraftVersion,
                 })
+            } else if (request.action === 'CheckMap') {
+                nativeHost.send({
+                    action: 'CheckMap',
+                    world_name: request.worldName,
+                    requester_id: tabId,
+                })
+            } else if (request.action === 'Continue') {
+                nativeHost.send({
+                    action: 'Continue',
+                    world_name: request.worldName,
+                    minecraft_version: request.minecraftVersion,
+                    requester_id: tabId,
+                })
             }
         })
 
@@ -67,3 +80,10 @@ nativeHost.onResponse((response) => {
 
     tab.send(response)
 })
+
+// APP
+// - Manejar resourcepacks
+
+// EXTENSION
+// - Mejorar botón de Jugar -> Barra de carga
+// - Testear cambios de pestaña y funcionamiento general

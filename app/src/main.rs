@@ -6,8 +6,10 @@ use crate::{
         request::Request,
         response::{AppError, Response},
     },
-    minecraft::{minecraft_launcher::MinecraftLauncher, world_importer::WorldImporter},
-    utilities::path_extension::PathExtension,
+    minecraft::{
+        minecraft_launcher::MinecraftLauncher, world::World, world_importer::WorldImporter,
+    },
+    utilities::{app_paths::AppPaths, path_extension::PathExtension},
 };
 
 mod messaging;
@@ -61,7 +63,57 @@ fn handle_request(request: Request) -> Result<()> {
 
             Ok(())
         }
+        Request::CheckMap {
+            world_name,
+            requester_id,
+        } => handle_check_map_request(world_name, requester_id),
+        Request::Continue {
+            world_name,
+            requester_id,
+            minecraft_version,
+        } => handle_continue_map_request(minecraft_version, world_name, requester_id),
     }
+}
+
+fn handle_continue_map_request(
+    minecraft_version: Option<String>,
+    world_name: String,
+    requester_id: i32,
+) -> Result<()> {
+    let world = World::new(&world_name, AppPaths::world(world_name.clone())?);
+    let version = world.find_version()?.or(minecraft_version);
+
+    match version {
+        Some(version) => {
+            Response::Installing { requester_id }.send()?;
+            MinecraftLauncher::launch(&version, world.name(), None)?;
+            Response::Launching { requester_id }.send()?;
+        }
+        None => Response::AppError {
+            requester_id,
+            error: AppError::UnknownWorldVersion,
+        }
+        .send()?,
+    }
+
+    Ok(())
+}
+
+fn handle_check_map_request(world_name: String, requester_id: i32) -> Result<()> {
+    Response::Checking { requester_id }.send()?;
+
+    let minecraft_worlds_folder = AppPaths::worlds()?;
+    let world_exists = minecraft_worlds_folder
+        .find_directory(&world_name)?
+        .is_some();
+
+    Response::CheckResult {
+        requester_id,
+        world_exists,
+    }
+    .send()?;
+
+    Ok(())
 }
 
 fn handle_start_request(

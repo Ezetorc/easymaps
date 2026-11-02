@@ -5,10 +5,26 @@ use std::io::{Write, stdout};
 #[derive(Debug, Serialize)]
 #[serde(tag = "status")]
 pub enum Response {
-    Importing { requester_id: i32 },
-    Installing { requester_id: i32 },
-    Launching { requester_id: i32 },
-    AppError { requester_id: i32, error: AppError },
+    Importing {
+        requester_id: i32,
+    },
+    Installing {
+        requester_id: i32,
+    },
+    Launching {
+        requester_id: i32,
+    },
+    Checking {
+        requester_id: i32,
+    },
+    CheckResult {
+        requester_id: i32,
+        world_exists: bool,
+    },
+    AppError {
+        requester_id: i32,
+        error: AppError,
+    },
     ConnectionError,
 }
 

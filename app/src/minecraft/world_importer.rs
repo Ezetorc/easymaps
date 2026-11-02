@@ -23,7 +23,7 @@ impl WorldImporter {
         Self::move_input_to_temp_directory(path.to_path_buf())?;
 
         let level_dat_path = temp_directory_path
-            .find_file("level.dat")?
+            .find_file("level.dat", true)?
             .context("Downloaded folder is not a Minecraft world")?;
         let world_directory_path = level_dat_path
             .parent()
@@ -33,6 +33,10 @@ impl WorldImporter {
             .and_then(OsStr::to_str)
             .context("Couldn't get directory's file name")?;
         let world_path = AppPaths::world(world_name)?;
+
+        // let pack_path = temp_directory_path.find_directory("assets", true)?;
+
+        // log!("pack path: {pack_path:?}");
 
         rename(world_directory_path, &world_path)
             .with_context(|| format!("Moving '{world_directory_path:?}' to '{world_path:?}'"))?;

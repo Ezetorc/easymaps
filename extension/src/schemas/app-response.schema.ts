@@ -23,6 +23,17 @@ export const AppResponseSchema = v.variant('status', [
     }),
 
     v.object({
+        status: v.literal('Checking'),
+        requester_id: v.number(),
+    }),
+
+    v.object({
+        status: v.literal('CheckResult'),
+        world_exists: v.boolean(),
+        requester_id: v.number(),
+    }),
+
+    v.object({
         status: v.literal('AppError'),
         requester_id: v.number(),
         error: v.picklist(appErrors),

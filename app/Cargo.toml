@@ -9,8 +9,9 @@ flate2 = "1.0"
 mc-launcher-core = "0.1.2"
 nbt-rs = "0.5.0"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-stuffr = "0.8.1"
+serde_json = "1.0.154"
+coxswain-core = "2.22.0"
+stuffr = "0.13.2"
 
 [profile.dev]
 debug = "line-tables-only"

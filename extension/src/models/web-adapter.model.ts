@@ -10,16 +10,13 @@ export abstract class WebAdapter {
 
         if (!this.isValidMap()) return
 
-        const minecraftVersion = this.determineMinecraftVersion()
-
-        this.addDownloadEvent(minecraftVersion)
+        // this.addDownloadEvent(minecraftVersion)
         this.addResponseEvent()
     }
 
     abstract isValidPage(): boolean
     abstract isValidMap(): boolean
     abstract addPlayButton(): void
-    abstract determineMinecraftVersion(): string | undefined
-    abstract addDownloadEvent(minecraftVersion?: string): void
+    // abstract addDownloadEvent(minecraftVersion?: string): void
     abstract addResponseEvent(): void
 }

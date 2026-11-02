@@ -11,6 +11,15 @@ pub enum Request {
         download_path: String,
         requester_id: i32,
     },
+    CheckMap {
+        world_name: String,
+        requester_id: i32,
+    },
+    Continue {
+        minecraft_version: Option<String>,
+        world_name: String,
+        requester_id: i32,
+    },
 }
 
 impl Request {

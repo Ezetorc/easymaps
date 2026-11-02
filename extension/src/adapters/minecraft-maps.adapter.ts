@@ -50,13 +50,25 @@ class MinecraftMapsAdapter extends WebAdapter {
 
     addPlayButton() {
         const $downloadButton = document.querySelector('.mc-download-btn')
+        const worldName = this.getWorldName()
 
-        if ($downloadButton) {
+        if ($downloadButton && worldName) {
+            this.playButton.setChecking()
+
+            Background.send({
+                action: 'CheckMap',
+                worldName: worldName,
+            })
+
             $downloadButton.before(this.playButton.element)
         }
     }
 
-    determineMinecraftVersion(): string | undefined {
+    getWorldName(): string | undefined {
+        return document.querySelector('h1')?.textContent
+    }
+
+    getMinecraftVersion(): string | undefined {
         const $minecraftVersion = document.querySelector(
             'div[class="grid grid-cols-2 overflow-hidden rounded-[4px] border border-white/[0.09] bg-white/[0.025]"]'
         )
@@ -66,26 +78,53 @@ class MinecraftMapsAdapter extends WebAdapter {
         return minecraftVersion ?? undefined
     }
 
-    addDownloadEvent(minecraftVersion?: string) {
-        this.playButton.onClick(() => {
-            const clickEvent = new Event('click', { bubbles: true })
-            const $downloadButton = document.querySelector('.mc-download-btn')
-
-            if ($downloadButton) {
-                $downloadButton.dispatchEvent(clickEvent)
-                this.playButton.setDownloading()
-
-                Background.send({
-                    action: 'Start',
-                    minecraftVersion,
-                })
-            }
-        })
-    }
-
     addResponseEvent() {
         browser.runtime.onMessage.addListener((response: AppResponse) => {
-            if (response.status === 'Importing') {
+            if (response.status === 'CheckResult') {
+                if (!response.world_exists) {
+                    this.playButton.setStart()
+
+                    this.playButton.onClick(() => {
+                        const clickEvent = new Event('click', { bubbles: true })
+                        const $downloadButton =
+                            document.querySelector('.mc-download-btn')
+
+                        if ($downloadButton) {
+                            $downloadButton.dispatchEvent(clickEvent)
+                            this.playButton.setDownloading()
+
+                            const minecraftVersion = this.getMinecraftVersion()
+
+                            Background.send({
+                                action: 'Start',
+                                minecraftVersion,
+                            })
+                        }
+                    })
+                } else {
+                    this.playButton.setContinue()
+
+                    this.playButton.onClick(() => {
+                        this.playButton.setImporting()
+
+                        const worldName = this.getWorldName()
+
+                        if (worldName) {
+                            const minecraftVersion = this.getMinecraftVersion()
+
+                            Background.send({
+                                action: 'Continue',
+                                worldName,
+                                minecraftVersion,
+                            })
+                        } else {
+                            this.playButton.setError(
+                                "Couldn't determine world name"
+                            )
+                        }
+                    })
+                }
+            } else if (response.status === 'Importing') {
                 this.playButton.setImporting()
             } else if (response.status === 'Installing') {
                 this.playButton.setInstalling()
