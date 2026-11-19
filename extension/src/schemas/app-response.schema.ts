@@ -4,32 +4,43 @@ export const appErrors = [
     'Unexpected',
     'BedrockWorldNotSupported',
     'UnknownWorldVersion',
+    'WorldNotFound',
 ] as const
 
 export const AppResponseSchema = v.variant('status', [
     v.object({
-        status: v.literal('Importing'),
+        status: v.literal('ImportingMap'),
         requester_id: v.number(),
     }),
 
     v.object({
-        status: v.literal('Installing'),
+        status: v.literal('InstallingVersion'),
         requester_id: v.number(),
     }),
 
     v.object({
-        status: v.literal('Launching'),
+        status: v.literal('LaunchingMinecraft'),
         requester_id: v.number(),
     }),
 
     v.object({
-        status: v.literal('Checking'),
+        status: v.literal('CheckingMap'),
         requester_id: v.number(),
     }),
 
     v.object({
-        status: v.literal('CheckResult'),
+        status: v.literal('MapCheckResult'),
         world_exists: v.boolean(),
+        requester_id: v.number(),
+    }),
+
+    v.object({
+        status: v.literal('DeletingMap'),
+        requester_id: v.number(),
+    }),
+
+    v.object({
+        status: v.literal('MapDeleteSuccess'),
         requester_id: v.number(),
     }),
 

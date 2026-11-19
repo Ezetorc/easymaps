@@ -8,11 +8,11 @@
             "id": "extension@easymaps.com"
         }
     },
-    "permissions": ["nativeMessaging", "downloads"],
+    "permissions": ["nativeMessaging", "downloads", "storage"],
     "content_scripts": [
         {
             "matches": ["https://www.minecraftmaps.com/*"],
-            "js": ["./dist/adapters/minecraft-maps.adapter.js"]
+            "js": ["./dist/minecraft-maps.adapter.js"]
         }
     ],
     "background": {

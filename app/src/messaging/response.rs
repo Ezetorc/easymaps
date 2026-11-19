@@ -5,25 +5,31 @@ use std::io::{Write, stdout};
 #[derive(Debug, Serialize)]
 #[serde(tag = "status")]
 pub enum Response {
-    Importing {
+    ImportingMap {
         requester_id: i32,
     },
-    Installing {
+    InstallingVersion {
         requester_id: i32,
     },
-    Launching {
+    LaunchingMinecraft {
         requester_id: i32,
     },
-    Checking {
+    CheckingMap {
         requester_id: i32,
     },
-    CheckResult {
+    MapCheckResult {
         requester_id: i32,
         world_exists: bool,
     },
     AppError {
         requester_id: i32,
         error: AppError,
+    },
+    DeletingMap {
+        requester_id: i32,
+    },
+    MapDeleteSuccess {
+        requester_id: i32,
     },
     ConnectionError,
 }
@@ -33,6 +39,7 @@ pub enum AppError {
     Unexpected,
     BedrockWorldNotSupported,
     UnknownWorldVersion,
+    WorldNotFound,
 }
 
 impl Response {

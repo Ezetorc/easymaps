@@ -1,5 +1,8 @@
-use anyhow::{Context, Result};
-use std::{fs::remove_file, path::PathBuf};
+use anyhow::{Context, Result, bail};
+use std::{
+    fs::{remove_dir_all, remove_file},
+    path::PathBuf,
+};
 
 use crate::{
     messaging::{
@@ -41,15 +44,20 @@ fn handle_request(request: Request) -> Result<()> {
     log!("[Request received] {request:?}");
 
     match request {
-        Request::Start {
+        Request::StartMap {
             minecraft_version,
             download_path,
             requester_id,
+            minecraft_username,
         } => {
             let path = download_path.clone();
 
-            if let Err(error) = handle_start_request(minecraft_version, download_path, requester_id)
-            {
+            if let Err(error) = handle_start_request(
+                minecraft_version,
+                minecraft_username,
+                download_path,
+                requester_id,
+            ) {
                 log!("❌ {error}");
 
                 Response::AppError {
@@ -67,16 +75,64 @@ fn handle_request(request: Request) -> Result<()> {
             world_name,
             requester_id,
         } => handle_check_map_request(world_name, requester_id),
-        Request::Continue {
+        Request::ContinueMap {
             world_name,
             requester_id,
             minecraft_version,
-        } => handle_continue_map_request(minecraft_version, world_name, requester_id),
+            minecraft_username,
+        } => handle_continue_map_request(
+            minecraft_version,
+            minecraft_username,
+            world_name,
+            requester_id,
+        ),
+        Request::DeleteMap {
+            world_name,
+            requester_id,
+        } => handle_delete_map_request(world_name, requester_id),
     }
+}
+
+fn handle_delete_map_request(world_name: String, requester_id: i32) -> Result<()> {
+    Response::CheckingMap { requester_id }.send()?;
+
+    let minecraft_worlds_folder = AppPaths::worlds()?;
+    let world_exists = minecraft_worlds_folder
+        .find_directory(&world_name)?
+        .is_some();
+
+    if world_exists {
+        Response::DeletingMap { requester_id }.send()?;
+
+        let world_path = AppPaths::world(world_name)?;
+        let result = remove_dir_all(&world_path);
+
+        match result {
+            Ok(_) => Response::MapDeleteSuccess { requester_id }.send()?,
+            Err(error) => {
+                Response::AppError {
+                    requester_id,
+                    error: AppError::Unexpected,
+                }
+                .send()?;
+
+                bail!(error)
+            }
+        }
+    } else {
+        Response::AppError {
+            requester_id,
+            error: AppError::WorldNotFound,
+        }
+        .send()?;
+    }
+
+    Ok(())
 }
 
 fn handle_continue_map_request(
     minecraft_version: Option<String>,
+    minecraft_username: Option<String>,
     world_name: String,
     requester_id: i32,
 ) -> Result<()> {
@@ -85,9 +141,9 @@ fn handle_continue_map_request(
 
     match version {
         Some(version) => {
-            Response::Installing { requester_id }.send()?;
-            MinecraftLauncher::launch(&version, world.name(), None)?;
-            Response::Launching { requester_id }.send()?;
+            Response::InstallingVersion { requester_id }.send()?;
+            MinecraftLauncher::launch(&version, world.name(), minecraft_username.as_deref())?;
+            Response::LaunchingMinecraft { requester_id }.send()?;
         }
         None => Response::AppError {
             requester_id,
@@ -100,14 +156,14 @@ fn handle_continue_map_request(
 }
 
 fn handle_check_map_request(world_name: String, requester_id: i32) -> Result<()> {
-    Response::Checking { requester_id }.send()?;
+    Response::CheckingMap { requester_id }.send()?;
 
     let minecraft_worlds_folder = AppPaths::worlds()?;
     let world_exists = minecraft_worlds_folder
         .find_directory(&world_name)?
         .is_some();
 
-    Response::CheckResult {
+    Response::MapCheckResult {
         requester_id,
         world_exists,
     }
@@ -118,10 +174,11 @@ fn handle_check_map_request(world_name: String, requester_id: i32) -> Result<()>
 
 fn handle_start_request(
     minecraft_version: Option<String>,
+    minecraft_username: Option<String>,
     download_path: String,
     requester_id: i32,
 ) -> Result<()> {
-    Response::Importing { requester_id }.send()?;
+    Response::ImportingMap { requester_id }.send()?;
 
     let download_path = PathBuf::from(download_path);
 
@@ -140,9 +197,9 @@ fn handle_start_request(
 
     match version {
         Some(version) => {
-            Response::Installing { requester_id }.send()?;
-            MinecraftLauncher::launch(&version, world.name(), None)?;
-            Response::Launching { requester_id }.send()?;
+            Response::InstallingVersion { requester_id }.send()?;
+            MinecraftLauncher::launch(&version, world.name(), minecraft_username.as_deref())?;
+            Response::LaunchingMinecraft { requester_id }.send()?;
         }
         None => Response::AppError {
             requester_id,

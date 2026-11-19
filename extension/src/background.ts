@@ -17,10 +17,11 @@ function getBrowserTab(tabId: number) {
         tab = new BrowserTab(tabId)
 
         tab.onRequest((request: AdapterRequest) => {
-            if (request.action === 'Start') {
+            if (request.action === 'StartMap') {
                 DownloadTracker.start({
                     tabId: tabId,
                     minecraftVersion: request.minecraftVersion,
+                    minecraftUsername: request.minecraftUsername,
                 })
             } else if (request.action === 'CheckMap') {
                 nativeHost.send({
@@ -28,11 +29,18 @@ function getBrowserTab(tabId: number) {
                     world_name: request.worldName,
                     requester_id: tabId,
                 })
-            } else if (request.action === 'Continue') {
+            } else if (request.action === 'ContinueMap') {
                 nativeHost.send({
-                    action: 'Continue',
+                    action: 'ContinueMap',
                     world_name: request.worldName,
                     minecraft_version: request.minecraftVersion,
+                    minecraft_username: request.minecraftUsername,
+                    requester_id: tabId,
+                })
+            } else if (request.action === 'DeleteMap') {
+                nativeHost.send({
+                    action: 'DeleteMap',
+                    world_name: request.worldName,
                     requester_id: tabId,
                 })
             }
@@ -56,8 +64,9 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
 DownloadTracker.onMapDownloadCompleted((download) => {
     nativeHost.send({
-        action: 'Start',
+        action: 'StartMap',
         minecraft_version: download.minecraftVersion,
+        minecraft_username: download.minecraftUsername,
         download_path: download.filename,
         requester_id: download.tabId,
     })
@@ -80,10 +89,3 @@ nativeHost.onResponse((response) => {
 
     tab.send(response)
 })
-
-// APP
-// - Manejar resourcepacks
-
-// EXTENSION
-// - Mejorar botón de Jugar -> Barra de carga
-// - Testear cambios de pestaña y funcionamiento general

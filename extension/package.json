@@ -4,7 +4,7 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "build": "bun run build.ts"
+        "build": "bun build src/background.ts src/adapters/* --outdir ./dist --target browser --format esm --entry-naming '[name].[ext]'"
     },
     "devDependencies": {
         "@types/bun": "latest",

@@ -2,17 +2,23 @@ import * as v from 'valibot'
 
 export const AdapterRequestSchema = v.variant('action', [
     v.object({
-        action: v.literal('Start'),
+        action: v.literal('StartMap'),
         minecraftVersion: v.optional(v.string()),
+        minecraftUsername: v.optional(v.string()),
     }),
     v.object({
         action: v.literal('CheckMap'),
         worldName: v.string(),
     }),
     v.object({
-        action: v.literal('Continue'),
+        action: v.literal('DeleteMap'),
+        worldName: v.string(),
+    }),
+    v.object({
+        action: v.literal('ContinueMap'),
         worldName: v.string(),
         minecraftVersion: v.optional(v.string()),
+        minecraftUsername: v.optional(v.string()),
     }),
 ])
 

@@ -4,19 +4,26 @@ use std::io::{Read, stdin};
 use anyhow::{Context, Result, bail};
 
 #[derive(Debug, Deserialize)]
+#[allow(clippy::enum_variant_names)]
 #[serde(tag = "action")]
 pub enum Request {
-    Start {
-        minecraft_version: Option<String>,
-        download_path: String,
-        requester_id: i32,
-    },
     CheckMap {
         world_name: String,
         requester_id: i32,
     },
-    Continue {
+    StartMap {
         minecraft_version: Option<String>,
+        minecraft_username: Option<String>,
+        download_path: String,
+        requester_id: i32,
+    },
+    ContinueMap {
+        minecraft_version: Option<String>,
+        minecraft_username: Option<String>,
+        world_name: String,
+        requester_id: i32,
+    },
+    DeleteMap {
         world_name: String,
         requester_id: i32,
     },

@@ -2,6 +2,7 @@ import * as v from 'valibot'
 
 export const DownloadSchema = v.object({
     minecraftVersion: v.optional(v.string()),
+    minecraftUsername: v.optional(v.string()),
     tabId: v.number(),
     filename: v.string(),
     id: v.number(),

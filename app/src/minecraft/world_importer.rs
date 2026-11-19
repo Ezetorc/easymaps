@@ -34,7 +34,7 @@ impl WorldImporter {
             .context("Couldn't get directory's file name")?;
         let world_path = AppPaths::world(world_name)?;
 
-        // let pack_path = temp_directory_path.find_directory("assets", true)?;
+        // let pack_path = temp_directory_path.find_directory("assets")?;
 
         // log!("pack path: {pack_path:?}");
 
